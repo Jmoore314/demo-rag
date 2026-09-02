@@ -3,3 +3,14 @@ psycopg2-binary
 voyageai>=0.2.1,<0.3.0
 anthropic
 python-dotenv
+
+# --- LangChain rebuild ---
+# langchain-postgres requires psycopg v3, not psycopg2 -- the manual pipeline
+# above still uses psycopg2 directly, so both drivers are installed side by side.
+psycopg[binary]
+langchain
+langchain-text-splitters
+langchain-community
+langchain-postgres
+langchain-voyageai
+langchain-anthropic
