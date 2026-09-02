@@ -27,12 +27,25 @@ avoid.
 
 import json
 import os
+import sys
+from pathlib import Path
 
 import psycopg2
 import psycopg2.extras
 from dotenv import load_dotenv
 
 load_dotenv(dotenv_path=".env")
+
+
+def _require_env(*names: str) -> None:
+    """Fail with a plain, actionable message instead of a bare KeyError --
+    this repo is meant to be read and adapted, not cloned-and-run without
+    your own document and API keys (see README.md's Setup section)."""
+    missing = [n for n in names if not os.environ.get(n)]
+    if missing:
+        print(f"Missing required .env value(s): {', '.join(missing)}")
+        print("See README.md's Setup section -- this pipeline needs your own API keys.")
+        sys.exit(1)
 
 
 def to_pgvector_literal(embedding: list[float]) -> str:
@@ -70,6 +83,10 @@ VALUE_TEMPLATE = "(%(chunk_id)s, %(source_file)s, %(page_start)s, %(page_end)s, 
 
 
 def main():
+    _require_env("SUPABASE_DB_URL")
+    if not Path("data/chunks_embedded.jsonl").exists():
+        print("data/chunks_embedded.jsonl not found -- run embed.py first.")
+        sys.exit(1)
     db_url = os.environ["SUPABASE_DB_URL"]
     records = load_chunks_embedded("data/chunks_embedded.jsonl")
     print(f"Loaded {len(records)} chunk records from disk.")

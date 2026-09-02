@@ -34,6 +34,7 @@ numbers are directly comparable.
 """
 
 import os
+import sys
 import time
 
 from dotenv import load_dotenv
@@ -43,6 +44,18 @@ from langchain_voyageai import VoyageAIEmbeddings
 load_dotenv(dotenv_path=".env")
 
 import voyageai
+
+
+def _require_env(*names: str) -> None:
+    """Fail with a plain, actionable message instead of a bare KeyError --
+    this repo is meant to be read and adapted, not cloned-and-run without
+    your own document and API keys (see README.md's Setup section)."""
+    missing = [n for n in names if not os.environ.get(n)]
+    if missing:
+        print(f"Missing required .env value(s): {', '.join(missing)}")
+        print("See README.md's Setup section -- this pipeline needs your own API keys.")
+        sys.exit(1)
+
 
 MODEL = "voyage-4"
 COLLECTION_NAME = "demo_rag_langchain"
@@ -119,6 +132,8 @@ def retrieve(vector_store: PGVector, question: str, top_k: int = DEFAULT_TOP_K) 
 
 
 if __name__ == "__main__":
+    _require_env("VOYAGE_API_KEY", "SUPABASE_DB_URL")
+
     # Same 3 test questions as src/retrieve.py, so the results are a real
     # apples-to-apples comparison, not just "different questions, hard to
     # tell if anything actually changed."

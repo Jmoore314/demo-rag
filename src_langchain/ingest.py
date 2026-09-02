@@ -39,6 +39,7 @@ two different chunking parameters on top of everything else.
 
 import json
 import os
+import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -87,6 +88,12 @@ def ingest_pdf(pdf_path: str = PDF_PATH):
 
 
 def main():
+    pdf_path = Path(PDF_PATH)
+    if not pdf_path.exists():
+        print(f"No PDF found at '{pdf_path}'.")
+        print("Set SOURCE_PDF_PATH in your local .env to point at your own PDF (see README.md).")
+        sys.exit(1)
+
     chunks = ingest_pdf()
 
     token_counts = [count_tokens(c.page_content) for c in chunks]

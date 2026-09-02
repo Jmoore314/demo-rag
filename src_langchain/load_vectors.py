@@ -38,7 +38,9 @@ the work for you: low-volume, latency-insensitive, not rate-limit-prone.
 
 import json
 import os
+import sys
 import time
+from pathlib import Path
 
 from dotenv import load_dotenv
 from langchain_postgres import PGVector
@@ -47,6 +49,18 @@ from langchain_voyageai import VoyageAIEmbeddings
 load_dotenv(dotenv_path=".env")
 
 import voyageai
+
+
+def _require_env(*names: str) -> None:
+    """Fail with a plain, actionable message instead of a bare KeyError --
+    this repo is meant to be read and adapted, not cloned-and-run without
+    your own document and API keys (see README.md's Setup section)."""
+    missing = [n for n in names if not os.environ.get(n)]
+    if missing:
+        print(f"Missing required .env value(s): {', '.join(missing)}")
+        print("See README.md's Setup section -- this pipeline needs your own API keys.")
+        sys.exit(1)
+
 
 MODEL = "voyage-4"
 COLLECTION_NAME = "demo_rag_langchain"  # separate from the manual pipeline's document_chunks table
@@ -116,6 +130,11 @@ def load_chunks(path: str) -> list[dict]:
 
 
 def main():
+    _require_env("VOYAGE_API_KEY", "SUPABASE_DB_URL")
+    if not Path("data/langchain_chunks.jsonl").exists():
+        print("data/langchain_chunks.jsonl not found -- run src_langchain/ingest.py first.")
+        sys.exit(1)
+
     chunks = load_chunks("data/langchain_chunks.jsonl")
     texts = [c["text"] for c in chunks]
     ids = [c["chunk_id"] for c in chunks]

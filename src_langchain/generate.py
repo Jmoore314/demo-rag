@@ -24,6 +24,7 @@ of built-in resilience -- not something you'd know without checking both.
 """
 
 import os
+import sys
 
 from dotenv import load_dotenv
 from langchain_anthropic import ChatAnthropic
@@ -33,6 +34,23 @@ from langchain_core.prompts import ChatPromptTemplate
 load_dotenv(dotenv_path=".env")
 
 from retrieve import get_vector_store, retrieve
+
+
+def _require_env(*names: str) -> None:
+    """Fail with a plain, actionable message instead of a bare KeyError --
+    this repo is meant to be read and adapted, not cloned-and-run without
+    your own document and API keys (see README.md's Setup section)."""
+    missing = [n for n in names if not os.environ.get(n)]
+    if missing:
+        print(f"Missing required .env value(s): {', '.join(missing)}")
+        print("See README.md's Setup section -- this pipeline needs your own API keys.")
+        sys.exit(1)
+
+
+# Checked at import time, not just inside __main__ -- ChatAnthropic below
+# is constructed at module scope, so a missing key would otherwise surface
+# as a bare KeyError before this module even finishes importing.
+_require_env("ANTHROPIC_API_KEY", "VOYAGE_API_KEY", "SUPABASE_DB_URL")
 
 # Current as of this build -- same model as src/generate.py, so any
 # difference in answers is attributable to the pipeline, not the model.

@@ -10,6 +10,7 @@ doesn't explicitly force grounding.
 """
 
 import os
+import sys
 
 from dotenv import load_dotenv
 
@@ -18,6 +19,17 @@ load_dotenv(dotenv_path=".env")
 import anthropic
 
 from retrieve import retrieve
+
+
+def _require_env(*names: str) -> None:
+    """Fail with a plain, actionable message instead of a bare KeyError --
+    this repo is meant to be read and adapted, not cloned-and-run without
+    your own document and API keys (see README.md's Setup section)."""
+    missing = [n for n in names if not os.environ.get(n)]
+    if missing:
+        print(f"Missing required .env value(s): {', '.join(missing)}")
+        print("See README.md's Setup section -- this pipeline needs your own API keys.")
+        sys.exit(1)
 
 # Current as of this build -- check platform.claude.com/docs/en/about-claude/models/overview
 # for the latest recommended model id, these change over time.
@@ -104,6 +116,8 @@ def generate_answer(question: str, top_k: int = 5) -> dict:
 
 
 if __name__ == "__main__":
+    _require_env("ANTHROPIC_API_KEY", "VOYAGE_API_KEY", "SUPABASE_DB_URL")
+
     test_questions = [
         "What should be entered if a previous cytology result is not known?",
         "What does a lab code represent?",

@@ -9,6 +9,7 @@ vectors" into "the specific passages relevant to what someone just asked."
 """
 
 import os
+import sys
 import time
 
 import psycopg2
@@ -16,6 +17,18 @@ import voyageai
 from dotenv import load_dotenv
 
 load_dotenv(dotenv_path=".env")
+
+
+def _require_env(*names: str) -> None:
+    """Fail with a plain, actionable message instead of a bare KeyError --
+    this repo is meant to be read and adapted, not cloned-and-run without
+    your own document and API keys (see README.md's Setup section)."""
+    missing = [n for n in names if not os.environ.get(n)]
+    if missing:
+        print(f"Missing required .env value(s): {', '.join(missing)}")
+        print("See README.md's Setup section -- this pipeline needs your own API keys.")
+        sys.exit(1)
+
 
 # Must match the model used to embed the corpus in Stage 2. Mixing
 # embedding models would put query and document vectors in different,
@@ -118,6 +131,8 @@ def retrieve(question: str, top_k: int = DEFAULT_TOP_K) -> list[dict]:
 
 
 if __name__ == "__main__":
+    _require_env("VOYAGE_API_KEY", "SUPABASE_DB_URL")
+
     # Test questions chosen against content we've actually inspected while
     # building this, so we have a real basis to judge "did it retrieve the
     # right thing" -- not just "did it return something."

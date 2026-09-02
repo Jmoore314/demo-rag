@@ -10,6 +10,7 @@ so this stage gets its own file and its own scrutiny.
 import json
 import os
 import re
+import sys
 from dataclasses import dataclass, asdict
 from pathlib import Path
 
@@ -278,6 +279,10 @@ if __name__ == "__main__":
     # SOURCE_PDF_PATH -- the committed default below is a placeholder so
     # the actual document name never has to appear in tracked source.
     pdf_path = Path(os.environ.get("SOURCE_PDF_PATH", "EDI Specifications/source-spec.pdf"))
+    if not pdf_path.exists():
+        print(f"No PDF found at '{pdf_path}'.")
+        print("Set SOURCE_PDF_PATH in your local .env to point at your own PDF (see README.md).")
+        sys.exit(1)
     out_path = Path("data/chunks.jsonl")
 
     chunks = ingest_pdf(pdf_path)

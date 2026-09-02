@@ -11,6 +11,7 @@ we compare vectors, and "close vectors" approximates "related meaning."
 
 import json
 import os
+import sys
 import time
 from pathlib import Path
 
@@ -37,6 +38,17 @@ MAX_RETRIES = 5
 
 # 60s / 3 requests = 20s minimum spacing; we pad it slightly.
 MIN_SECONDS_BETWEEN_REQUESTS = 21
+
+
+def _require_env(*names: str) -> None:
+    """Fail with a plain, actionable message instead of a bare KeyError --
+    this repo is meant to be read and adapted, not cloned-and-run without
+    your own document and API keys (see README.md's Setup section)."""
+    missing = [n for n in names if not os.environ.get(n)]
+    if missing:
+        print(f"Missing required .env value(s): {', '.join(missing)}")
+        print("See README.md's Setup section -- this pipeline needs your own API keys.")
+        sys.exit(1)
 
 
 def load_chunks(path: str) -> list[dict]:
@@ -109,6 +121,10 @@ def cosine_similarity(a: list[float], b: list[float]) -> float:
 
 
 if __name__ == "__main__":
+    _require_env("VOYAGE_API_KEY")
+    if not Path("data/chunks.jsonl").exists():
+        print("data/chunks.jsonl not found -- run ingest.py first.")
+        sys.exit(1)
     chunks = load_chunks("data/chunks.jsonl")
     client = voyageai.Client(api_key=os.environ["VOYAGE_API_KEY"])
 

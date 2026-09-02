@@ -1,5 +1,13 @@
 # RAG from Scratch
 
+> **This repo is a portfolio artifact, not a clone-and-run tool.** The
+> source PDF and the Voyage AI / Anthropic / Supabase credentials it needs
+> are intentionally excluded (see "What's intentionally not in this repo"
+> below) -- running the scripts as-is will stop with a clear error message
+> telling you what's missing, not produce results. Point `SOURCE_PDF_PATH`
+> at your own document and supply your own API keys in a local `.env` to
+> actually execute it end-to-end.
+
 A small, working Retrieval-Augmented Generation pipeline, built by hand to
 understand every stage end-to-end before reaching for a framework.
 
