@@ -1,10 +1,10 @@
 # RAG from Scratch — Learning Journal
 
 A running record of what I built, why I built it that way, and the vocabulary
-that goes with it. Source document: `EDI Specifications/External EDI Specs -
-Ver 10.15.pdf` (140-page HL7 lab-interface spec). Goal: build a working RAG
-pipeline by hand first, then rebuild it with LangChain to see what the
-framework buys you.
+that goes with it. Source document: a 140-page HL7 lab-interface technical
+spec PDF (excluded from this repo -- not mine to publish; see README).
+Goal: build a working RAG pipeline by hand first, then rebuild it with
+LangChain to see what the framework buys you.
 
 **Architecture chosen:** Voyage AI for embeddings → Supabase Postgres
 (pgvector) for storage/retrieval → Claude (Anthropic API) for generation.
@@ -40,8 +40,8 @@ Root cause is precise: `chunk_pages()` in `ingest.py` only ever checks
 token count before deciding to keep packing paragraphs into the current
 chunk buffer -- it has no concept of topic or document structure. The fix
 is narrow and surgical: detect section-header-like lines (pattern: leading
-number + heading, e.g. "2 GENERAL NOTES", "5.3.2 PID Segment - Patient
-Identification" -- both real patterns in this document) and force a
+number + heading, e.g. "3 SUPPLEMENTAL NOTES", "6.1.4 Example Segment -
+Sample Identification Fields" -- both real patterns in this document) and force a
 buffer flush whenever one appears, even under the token budget, so a new
 chunk always starts fresh at a structural boundary instead of potentially
 absorbing trailing unrelated content from the prior section. Small,
@@ -60,7 +60,7 @@ risk of stripping meaningful content that resembles the pattern. More
 importantly, Stage 5 already showed the overall pipeline is tolerant of
 this specific imperfection -- even with 2 borderline-irrelevant chunks in
 the retrieved set, Claude's answer correctly used only the genuinely
-relevant ZCY-30 through ZCY-35 fields (verified against source) and wasn't
+relevant ZAB-10 through ZAB-15 fields (verified against source) and wasn't
 thrown off by the noise. Generalizable lesson: retrieval doesn't have to
 be perfect for the overall system to produce a correct answer, because a
 properly grounded generation step has some built-in resilience to noisy
@@ -95,7 +95,7 @@ new one would reintroduce the exact dilution problem this fix targets.
 
 **3. The `MIN_MEANINGFUL_TOKENS` guard -- a bug found on the first run.**
 The first version flushed on *every* header line unconditionally, which
-produced a degenerate chunk: `chunk-0007 = "1 PREFACE"` (2 tokens) --
+produced a degenerate chunk: `chunk-0007 = "1 OVERVIEW"` (2 tokens) --
 two headers appeared back-to-back with no real content between them, so
 the first header's forced flush emitted a near-empty chunk. A chunk with
 2 tokens of content is worse than the dilution problem it was meant to
@@ -130,9 +130,8 @@ after re-embedding and re-loading the 216 new chunks:**
   results was a genuine PID-segment chunk. After: all 3 top results
   (chunk-0184 at 0.7010, chunk-0038 at 0.7001, chunk-0135 at 0.6993) are
   genuine PID-segment content. Root cause of the improvement: this
-  document defines the PID segment **three separate times** (pages 19,
-  89, and 121 -- likely once in an overview section and twice in
-  per-message-type detail sections). Before the fix, at least one of
+  document defines the PID segment **three separate times** (likely once
+  in an overview section and twice in per-message-type detail sections). Before the fix, at least one of
   those three occurrences was chunked together with trailing unrelated
   text, diluting its embedding enough to rank below an off-topic chunk.
   The header-flush fix gives each of the three occurrences a clean,
@@ -144,11 +143,11 @@ after re-embedding and re-loading the 216 new chunks:**
   (0.4980 -> 0.4998). Investigated why: pulled the full text of the
   current lab-code chunk (`chunk-0011`, 420 tokens). It's cleaner than
   before -- the old front-matter/disclaimer contamination is gone -- but
-  it *still* mixes three distinct things under one document heading ("2
-  GENERAL NOTES") that has no further sub-heading underneath it: (1) the
-  prose definition of a lab code, (2) a raw pipe-delimited example HL7
-  message (MSH/PID/ORC/OBR/OBX/ZPS segments), and (3) an unrelated
-  NPI/Ordering-Provider-ID note about ORC-12/OBR-16. A header-based
+  it *still* mixes three distinct things under one document heading ("3
+  SUPPLEMENTAL NOTES") that has no further sub-heading underneath it: (1)
+  the prose definition of a lab code, (2) a raw pipe-delimited example HL7
+  message (a mix of standard HL7 segments plus a custom Z-segment), and
+  (3) an unrelated provider-ID note referencing two other fields. A header-based
   heuristic can only split at boundaries the document itself marks with a
   heading -- it has no way to detect a topic shift *within* a single
   un-subdivided section. This is an honest, bounded result: the fix
@@ -232,7 +231,7 @@ genuinely new since my training data, not oversights):
 **Verification results (not just "did it return an answer" -- checked
 against actual source text):**
 
-- **Cytology question:** answer named ZCY-30 through ZCY-35 as a set.
+- **Cytology question:** answer named ZAB-10 through ZAB-15 as a set.
   Checked all 5 retrieved chunks' raw text -- all six field codes
   genuinely present, not fabricated.
 - **Lab code question:** citations (p. 5 for the core definition, pp.
@@ -287,8 +286,8 @@ pgvector defines `<=>` as literally `1 - cosine_similarity`).
 arbitrary questions -- a real basis to judge correctness):
 
 1. *"What should be entered if a previous cytology result is not known?"*
-   -> correct chunk (ZCY-33, "Previous cytology information") ranked #2,
-   0.5784, barely behind an unrelated field (Estro-RX, 0.5798). Root
+   -> correct chunk (ZAB-13, a custom result-tracking field) ranked #2,
+   0.5784, barely behind an unrelated field (0.5798). Root
    cause: this section is dozens of near-identical Y/N field templates
    sharing the same boilerplate sentence ("If the answer to this question
    is not known this field should be blank..."). The text that actually
@@ -309,10 +308,10 @@ arbitrary questions -- a real basis to judge correctness):
    greedy chunker never split them. Real, concrete instance of the
    embedding-dilution concept from the earlier follow-up deep dive --
    token-count-only chunking can't see a section-header boundary
-   ("2 GENERAL NOTES") that a human would obviously split on.
+   ("3 SUPPLEMENTAL NOTES") that a human would obviously split on.
 3. *"What is required in the PID segment for patient identification?"* ->
-   clean win, chunk-0027 explicitly contains "5.3.2 PID Segment - Patient
-   Identification," highest similarity of all three tests (0.6831). No
+   clean win, chunk-0027 explicitly contains "6.1.4 Example Segment - Sample
+   Identification Fields," highest similarity of all three tests (0.6831). No
    dilution, no repetition -- distinctive text retrieves well.
 
 **Decision:** retrieval works well enough to build the full pipeline
@@ -385,7 +384,7 @@ client, since project/schema provisioning isn't really "the pipeline,"
 it's one-time infrastructure setup.
 
 **What it does:** created a free-tier Supabase Postgres project
-(`demo-rag`, project ref `kujjuomyzwmbheppgudf`), enabled the `vector`
+(`demo-rag`), enabled the `vector`
 extension, created a `document_chunks` table with a `vector(1024)` column
 matching Voyage's output dimension, then `load_vectors.py` upserts all 194
 embedded chunks from `data/chunks_embedded.jsonl` into it. Finished by
@@ -553,7 +552,7 @@ Asked myself: why is `len(text) // 4` only an approximation? Two reasons:
 1. **Tokenizers count learned vocabulary pieces, not characters.** Common
    English (e.g. "hospital") usually collapses into one token; rare strings
    get shredded into several small pieces. This document is full of the
-   rare-string case: HL7/EDI field codes like `ZCY-33`, `PID-3`, `ORC-1`
+   rare-string case: HL7/EDI field codes like `ZAB-13`, `PID-3`, `ORC-1`
    aren't real words, so a general-purpose tokenizer likely splits them
    into several short tokens each (e.g. `Z`/`CY`/`-`/`33`). PDF table
    debris (repeated spaces, `|` characters) adds similar overhead. So
@@ -587,7 +586,7 @@ Sharpened this beyond "too small/too big is bad":
 - **Too small:** not really about the retriever "not knowing which half" of
   a passage a question refers to. The real failure is a chunk can be an
   incomplete unit of meaning -- e.g. an answer fragment ("'Y' - Yes / 'N' -
-  No") separated from the field code it describes (`ZCY-33`). Its
+  No") separated from the field code it describes (`ZAB-13`). Its
   embedding has nothing distinctive to grab onto, so it may not even
   surface for a relevant query; and if it does surface, the LLM gets an
   ambiguous fragment it can't fully interpret. Also multiplies total chunk

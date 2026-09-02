@@ -87,7 +87,7 @@ def embed_texts(client: voyageai.Client, texts: list[str], input_type: str) -> l
     input_type="query" (the user's question side, used in Stage 4). This
     "asymmetric" embedding is deliberate -- a question and its answer often
     don't look alike as raw text ("How do I handle an unknown cytology
-    result?" vs "ZCY-33 ... If the answer is not known this field should be
+    result?" vs "ZAB-13 ... If the answer is not known this field should be
     blank"), so the model is trained to embed queries and documents into
     matching regions of the vector space *despite* that surface mismatch,
     but only if you tell it which side is which. Get this backwards (or

@@ -85,7 +85,7 @@ def clean_text(text: str) -> str:
 
 # Detects section-header-like lines: a leading number (optionally dotted,
 # e.g. "5.3.2") followed by a heading in the same line, e.g.
-# "2 GENERAL NOTES" or "5.3.2 PID Segment - Patient Identification" --
+# "3 SUPPLEMENTAL NOTES" or "6.1.4 Example Segment - Sample ID Fields" --
 # both real patterns in this document. Deliberately requires heading text
 # on the SAME line as the number, which is what keeps this from
 # false-matching bare subfield numbers like a lone "5.2" that precedes its
@@ -101,7 +101,7 @@ def _split_on_headers(text: str) -> list[str]:
     """Break a paragraph block into pieces wherever a header-like line
     starts -- this is the fix for the embedding-dilution problem found in
     Stage 4 testing. Without this, a block like "HL7 contact info /
-    disclaimer paragraph / 2 GENERAL NOTES / lab code definition" gets
+    disclaimer paragraph / 3 SUPPLEMENTAL NOTES / lab code definition" gets
     packed into one chunk purely because it fits under the token budget,
     even though it's visibly three unrelated topics separated by real
     section boundaries in the source document."""
@@ -270,7 +270,7 @@ def ingest_pdf(pdf_path: Path, **chunk_kwargs) -> list[Chunk]:
 
 
 if __name__ == "__main__":
-    pdf_path = Path("EDI Specifications/External EDI Specs - Ver 10.15.pdf")
+    pdf_path = Path("EDI Specifications/source-spec.pdf")  # point this at your own PDF
     out_path = Path("data/chunks.jsonl")
 
     chunks = ingest_pdf(pdf_path)
