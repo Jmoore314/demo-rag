@@ -20,6 +20,7 @@ LangChain to see what the framework buys you.
 - [x] Stage 5 — Prompt construction & Claude generation
 - [x] Verification pass (folded into Stage 5 testing -- see below)
 - [x] LangChain rebuild
+- [x] Automated test suite (pytest, mocked -- no API cost)
 
 **Rough time estimate for the full project (manual build + LangChain
 rebuild):** ~5–9 hours of hands-on, explained work, most realistically spread
@@ -52,3 +53,7 @@ split into a few files, each with a clear job:
   alternatives, multi-tenant architecture). Explicitly not things built or
   debugged here -- kept separate from the rest of the journal so that
   distinction stays clear.
+- **[`05-testing.md`](./05-testing.md)** -- the `pytest` suite: what's
+  unit-tested versus what needs a real evaluation harness instead and why,
+  the sibling-import collision it had to work around, and two real bugs
+  the tests themselves caught while being written.

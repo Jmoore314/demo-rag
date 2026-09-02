@@ -1,0 +1,5 @@
+# Test-only dependencies -- deliberately kept separate from requirements.txt.
+# Nothing that clones this repo to actually run the pipeline needs pytest;
+# only someone running the test suite does.
+-r requirements.txt
+pytest>=8.0

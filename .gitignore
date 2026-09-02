@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 .DS_Store
 venv/
+.pytest_cache/
 
 # Source spec PDFs -- not included (see decision in README)
 EDI Specifications/*.pdf

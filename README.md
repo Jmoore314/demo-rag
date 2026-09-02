@@ -48,6 +48,23 @@ Requires a `.env` file (not committed) with `VOYAGE_API_KEY`,
 `ANTHROPIC_API_KEY`, `SUPABASE_DB_URL`, and `SOURCE_PDF_PATH` (the local
 path to your own PDF -- kept out of tracked code on purpose, see below).
 
+## Testing
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
+67 tests, no API key or `.env` required, no network calls, no cost --
+everything deterministic (chunking, prompt formatting, URL/vector-literal
+conversion) is tested directly, and everything that normally calls an API
+or a database (retry/pacing logic, `retrieve()`, `generate_answer()`) is
+tested against a mocked client instead of a real one. What's deliberately
+*not* here -- retrieval/generation quality against the real document --
+is a different kind of check than a unit test can give an honest answer
+to; see [`journal/05-testing.md`](./journal/05-testing.md) for why, and
+what that would look like instead.
+
 ## What's intentionally not in this repo
 
 - **The source PDF and related spec documents.** They're from a past
@@ -61,8 +78,8 @@ path to your own PDF -- kept out of tracked code on purpose, see below).
 
 ## Status
 
-Manual pipeline: complete, verified against real retrieval and generation
-output. A LangChain rebuild of the same five stages -- to compare what a
-standard framework provides out of the box versus what still has to be
-hand-built -- is planned as a follow-up (see the journal's progress
-checklist).
+Manual pipeline and the LangChain rebuild of the same five stages: both
+complete, both verified against real retrieval and generation output (see
+[`journal/02-langchain-rebuild.md`](./journal/02-langchain-rebuild.md) for
+the comparison). A `pytest` suite covers the deterministic and mockable
+parts of both (see Testing, above).
