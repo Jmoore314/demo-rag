@@ -64,9 +64,14 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-Requires a `.env` file (not committed) with `VOYAGE_API_KEY`,
+Copy `.env.example` to `.env` and fill in `VOYAGE_API_KEY`,
 `ANTHROPIC_API_KEY`, `SUPABASE_DB_URL`, and `SOURCE_PDF_PATH` (the local
 path to your own PDF -- kept out of tracked code on purpose, see below).
+
+Before running the manual pipeline (`src/`), run [`schema.sql`](./schema.sql)
+once against your Postgres database to create the `document_chunks` table
+and enable pgvector. The LangChain rebuild (`src_langchain/`) doesn't need
+this -- it manages its own table automatically.
 
 ## Testing
 

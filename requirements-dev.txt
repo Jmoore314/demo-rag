@@ -2,4 +2,4 @@
 # Nothing that clones this repo to actually run the pipeline needs pytest;
 # only someone running the test suite does.
 -r requirements.txt
-pytest>=8.0
+pytest==9.1.1

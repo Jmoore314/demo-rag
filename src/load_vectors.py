@@ -1,20 +1,11 @@
 """
 Stage 3: Loading embedded chunks into Supabase Postgres (pgvector).
 
-The schema (created separately via migration):
-
-    create table document_chunks (
-        id           bigserial primary key,
-        chunk_id     text not null unique,
-        source_file  text not null,
-        page_start   integer not null,
-        page_end     integer not null,
-        token_count  integer not null,
-        content      text not null,
-        embedding    vector(1024) not null,   -- pgvector's native vector type
-        embedding_model text not null,
-        created_at   timestamptz not null default now()
-    );
+The schema this script expects (run once, separately -- see schema.sql
+at the repo root, and journal/01-build-log.md's Stage 3 for why this is
+one-time infrastructure setup rather than something the pipeline itself
+creates) is a `document_chunks` table with a native `vector(1024)` column
+plus a cosine-distance HNSW index.
 
 Why a native `vector` column instead of just storing the embedding as JSON
 or a plain float array? Because pgvector adds similarity *operators*
