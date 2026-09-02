@@ -35,6 +35,26 @@ actual narrative; this README is just a map.
 `src/visualize_embeddings.py` is an exploratory, non-pipeline script that
 projects the embeddings to 2D (PCA + t-SNE) to sanity-check clustering.
 
+## LangChain rebuild
+
+The same five stages, rebuilt in `src_langchain/` using LangChain instead
+of hand-written code, to compare what a standard framework provides out of
+the box versus what still has to be built by hand regardless. Same `.env`,
+same source PDF, a separate Postgres collection so it never touches the
+manual pipeline's data. Run in this order:
+
+| Stage(s) | Script | Replaces |
+|---|---|---|
+| 1. Ingestion & chunking | `src_langchain/ingest.py` | `PyPDFLoader` + `RecursiveCharacterTextSplitter` replace `extract_pages()`/`clean_text()`/`chunk_pages()` |
+| 2+3. Embeddings & vector storage | `src_langchain/load_vectors.py` | `VoyageAIEmbeddings` + `PGVector` replace `embed.py` + `load_vectors.py` (these two collapse into one file/step) |
+| 4. Retrieval | `src_langchain/retrieve.py` | `PGVector.similarity_search_with_score_by_vector()` replaces the hand-written SQL query |
+| 5. Generation | `src_langchain/generate.py` | `ChatPromptTemplate` + `ChatAnthropic`, composed via LCEL, replace `build_prompt()` + the raw API call |
+
+Full comparison -- what LangChain got right, two real gaps found by
+reading its installed source, and a chunking-behavior prediction a live
+run contradicted -- is in
+[`journal/02-langchain-rebuild.md`](./journal/02-langchain-rebuild.md).
+
 ## Setup
 
 ```bash
