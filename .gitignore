@@ -1,0 +1,13 @@
+.env
+__pycache__/
+*.pyc
+.DS_Store
+venv/
+
+# Source spec PDFs -- not included (see decision in README)
+EDI Specifications/*.pdf
+
+# Generated/regenerable pipeline output -- large, and reproducible by
+# re-running src/ingest.py -> embed.py -> load_vectors.py. Kept out of
+# the repo; only the plot image below is tracked.
+data/*.jsonl

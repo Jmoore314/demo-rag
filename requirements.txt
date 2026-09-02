@@ -1,0 +1,5 @@
+pypdf
+psycopg2-binary
+voyageai>=0.2.1,<0.3.0
+anthropic
+python-dotenv
