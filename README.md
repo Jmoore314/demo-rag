@@ -36,7 +36,8 @@ pip install -r requirements.txt
 ```
 
 Requires a `.env` file (not committed) with `VOYAGE_API_KEY`,
-`ANTHROPIC_API_KEY`, and `SUPABASE_DB_URL`.
+`ANTHROPIC_API_KEY`, `SUPABASE_DB_URL`, and `SOURCE_PDF_PATH` (the local
+path to your own PDF -- kept out of tracked code on purpose, see below).
 
 ## What's intentionally not in this repo
 

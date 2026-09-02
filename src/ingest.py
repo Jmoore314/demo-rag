@@ -8,11 +8,15 @@ so this stage gets its own file and its own scrutiny.
 """
 
 import json
+import os
 import re
 from dataclasses import dataclass, asdict
 from pathlib import Path
 
+from dotenv import load_dotenv
 from pypdf import PdfReader
+
+load_dotenv(dotenv_path=".env")
 
 # We don't have the real Voyage or Claude tokenizer available offline, and
 # pulling one down (e.g. tiktoken's cl100k_base, which isn't even the exact
@@ -270,7 +274,10 @@ def ingest_pdf(pdf_path: Path, **chunk_kwargs) -> list[Chunk]:
 
 
 if __name__ == "__main__":
-    pdf_path = Path("EDI Specifications/source-spec.pdf")  # point this at your own PDF
+    # Real filename lives only in the local, gitignored .env as
+    # SOURCE_PDF_PATH -- the committed default below is a placeholder so
+    # the actual document name never has to appear in tracked source.
+    pdf_path = Path(os.environ.get("SOURCE_PDF_PATH", "EDI Specifications/source-spec.pdf"))
     out_path = Path("data/chunks.jsonl")
 
     chunks = ingest_pdf(pdf_path)
