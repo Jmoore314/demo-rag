@@ -10,7 +10,7 @@ everything in the manual version except the header-flush fix:
                                        fallback (_split_oversized())
 
 Known, deliberate differences from src/ingest.py (full writeup in
-LEARNING_JOURNAL.md):
+journal/01-build-log.md):
 
   1. Page boundaries. The manual pipeline concatenates the whole document
      into one text stream before chunking, so a chunk CAN span a page

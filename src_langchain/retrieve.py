@@ -17,7 +17,7 @@ bulk-embedding run, which leaves the account's rate-limit window still
 hot. This is the LangChain-rebuild version of a problem the MANUAL
 pipeline already hit and fixed in the exact same place: src/retrieve.py
 needed the same pacing logic as src/embed.py for precisely this reason
-(see LEARNING_JOURNAL.md, Stage 5 section, item 5). Same lesson,
+(see journal/01-build-log.md, Stage 5 section, item 5). Same lesson,
 rediscovered independently in the rebuild -- strong evidence it's a real
 property of the account/API, not a fluke of one pipeline's code.
 

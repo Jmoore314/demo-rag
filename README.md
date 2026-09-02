@@ -17,9 +17,10 @@ embeddings, Postgres + pgvector (hosted on Supabase) for vector storage,
 Claude for generation.
 
 **The full write-up -- what each stage does, why it's built that way, key
-terms, and every real bug hit along the way -- lives in
-[`LEARNING_JOURNAL.md`](./LEARNING_JOURNAL.md).** That file is the actual
-narrative; this README is just a map.
+terms, and every real bug hit along the way -- lives in the
+[`journal/`](./journal/) directory, starting at
+[`journal/00-overview.md`](./journal/00-overview.md).** Those files are the
+actual narrative; this README is just a map.
 
 ## Pipeline
 

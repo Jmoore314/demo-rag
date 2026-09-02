@@ -13,7 +13,7 @@ embeddings) the "normal" idiomatic way -- a real finding, not a style
 choice:**
 
 Read the installed langchain-voyageai source before writing this (see
-LEARNING_JOURNAL.md for the full walkthrough). VoyageAIEmbeddings.
+journal/02-langchain-rebuild.md for the full walkthrough). VoyageAIEmbeddings.
 embed_documents() batches texts by calling `self._client.tokenize(...)`
 ONCE PER TEXT before it ever calls the actual embed endpoint -- purely to
 measure how many texts fit under the model's token-per-batch ceiling. For
