@@ -88,7 +88,7 @@ def to_pgvector_literal(embedding: list[float]) -> str:
 # descending by similarity -- just the more natural direction to write
 # "closest first" in SQL. The HNSW index built in Stage 3 (vector_cosine_ops)
 # is what makes Postgres able to answer this without scanning every row
-# once the table is large; at 194 rows it wouldn't matter either way.
+# once the table is large; at 216 rows it wouldn't matter either way.
 RETRIEVE_SQL = """
 select
     chunk_id,

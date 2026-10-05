@@ -151,7 +151,7 @@ if __name__ == "__main__":
         sim = cosine_similarity(embeddings[i], embeddings[j])
         print(f"{label}: chunk-{i:04d} vs chunk-{j:04d}  cosine similarity = {sim:.4f}")
 
-    # Adjacent chunks (194-chunk corpus, both from the dense HL7 field-code
+    # Adjacent chunks (216-chunk corpus, both from the dense HL7 field-code
     # section) -- these share overlap text AND topic, so similarity should
     # be high.
     show(80, 81, "Adjacent, same topic (HL7 field codes)")
