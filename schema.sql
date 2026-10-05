@@ -34,3 +34,16 @@ create table if not exists document_chunks (
 create index if not exists document_chunks_embedding_hnsw_idx
     on document_chunks
     using hnsw (embedding vector_cosine_ops);
+
+-- Lock the table down at the API layer. With RLS enabled and no policies,
+-- the Supabase anon/authenticated keys (PostgREST) cannot read or write
+-- any rows. The pipeline connects directly to Postgres via SUPABASE_DB_URL
+-- (the table owner role), which bypasses RLS, so it is unaffected.
+alter table document_chunks enable row level security;
+
+-- Note: the LangChain rebuild's tables (langchain_pg_collection and
+-- langchain_pg_embedding) are created at runtime by PGVector, so they
+-- can't be locked down here. After running src_langchain/load_vectors.py
+-- for the first time, run:
+--   alter table langchain_pg_collection enable row level security;
+--   alter table langchain_pg_embedding enable row level security;
