@@ -178,6 +178,55 @@ one alone.
 
 ---
 
+## Post-reseed check: a retrieval gap in the LangChain pipeline (Oct 5, 2026)
+
+The Supabase project had been paused and its tables came back empty, so
+both pipelines were reloaded from the saved chunk files and run again
+through their `generate.py` scripts with the same four test questions.
+Both worked end to end. Three of the four questions produced equivalent,
+correctly cited answers (the cytology question, the lab code question,
+and the out-of-scope France question, which both pipelines refused with
+top similarity scores around 0.2). The fourth, the PID segment question,
+exposed a real difference.
+
+**What happened.** The manual pipeline listed PID-8 (Patient Gender) among
+the required PID fields. The LangChain pipeline left it out, and its
+answer gave no sign that anything was missing. Checking the source PDF
+confirmed the manual pipeline was right: page 19 marks PID-8 as required.
+
+**Why.** The LangChain splitter cut page 19's field table into two chunks.
+`lc-chunk-0030` (525 tokens) holds the table down through PID-7, and
+`lc-chunk-0031` (145 tokens) holds PID-8. The top 5 results for the
+question included chunk 0030 but not chunk 0031, so the model never saw
+PID-8 and had no way to know it was absent. The manual pipeline avoided
+this by chance: its chunks span page boundaries, and one of its top 5 was
+a different page (pp. 122-123) that also listed PID-8.
+
+**Why it matters.** This is a retrieval coverage problem, not a generation
+problem. The model followed its grounding rules correctly and answered
+only from what it was given. A grounded answer is only as complete as the
+excerpts retrieved, and a table that gets split across chunks is a
+natural place for completeness to break. It also showed up as a confident,
+cleanly formatted answer, which is harder to catch than a refusal.
+
+**Possible fixes (none tried yet).**
+- Raise `top_k` from 5 to something like 7 for the LangChain pipeline.
+  This would probably pull in the missing sibling chunk for this
+  question, but it is a guess until tested, and it costs more prompt
+  tokens on every question.
+- Keep small trailing fragments attached to their neighbor, for example
+  by merging a chunk under a minimum size back into the previous chunk
+  from the same page.
+- Include adjacent chunks from the same page whenever one chunk from that
+  page is retrieved.
+
+This is also an example of the kind of check that a unit test cannot
+give, as described in [`05-testing.md`](./05-testing.md). Whether the
+retrieved set is complete for a given question needs a small evaluation
+set with known correct answers, not just mocked plumbing.
+
+---
+
 ## Key terms — LangChain rebuild
 
 - **LCEL (LangChain Expression Language):** the `|` (pipe) operator for
